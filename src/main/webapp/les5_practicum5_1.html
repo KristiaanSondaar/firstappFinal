@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+<meta charset="ISO-8859-1">
+<title>les5_practicum5_1</title>
+</head>
+<body>
+<h1>Mijn locatie</h1>
+<div id="frame">
+
+<div id="myLocation"></div>
+<form>
+Landcode: <label for="Landcode" id="Landcode">Loading: </label><br>
+Land: <label for="Land" id="Land">Loading: </label><br>
+Regio: <label for="Regio" id="Regio">Loading: </label><br>
+Stad: <label for="Stad" id="Stad">Loading: </label><br>
+Postcode: <label for="Postcode" id="Postcode">Loading: </label><br>
+Latitude: <label for="Latitude" id="Latitude">Loading: </label><br>
+Longitude: <label for="Longitude" id="longitude">Loading: </label><br>
+ip: <label for="IP" id="IP">Loading: </label>
+
+</form>
+<div id="weatherInfo"></div>
+
+<div id="countryList"></div>
+
+</div>
+
+<!-- Hier komen jouw script-tags -->
+<script>
+
+
+function initPage() {
+	fetch("https://ipapi.co/json/")
+	.then(response=> response.json())
+	.then(function(myJson){
+		document.getElementById("Landcode").innerHTML = myJson.country;
+		document.getElementById("Land").innerHTML = myJson.country_name;
+		document.getElementById("Regio").innerHTML = myJson.region;
+		document.getElementById("Stad").innerHTML = myJson.city;
+		document.getElementById("Postcode").innerHTML = myJson.postal;
+		document.getElementById("Latitude").innerHTML = myJson.latitude;
+		document.getElementById("longitude").innerHTML = myJson.longitude;
+		document.getElementById("IP").innerHTML = myJson.ip;
+
+	});
+	}
+initPage();
+</script>
+</body>
+</html>

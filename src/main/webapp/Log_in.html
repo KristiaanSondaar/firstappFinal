@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<title>Log in</title>
+</head>
+<body>
+<form id="loginform">
+	<input type="text" name="username" />
+	<input type="text" name="password" />
+	<input type="button" value="login" id="login" />
+</form>
+
+<form action="/les8_practicum8_1.html">
+    <input type="submit" value="Ga naar Opdracht" />
+</form>
+
+<script>
+function login(event) {
+	var formData = new FormData(document.querySelector("#loginform"));
+	var encData = new URLSearchParams(formData.entries());
+	
+	fetch("restservices/authentication", {method: 'POST', body: encData})
+	.then(function(response) {
+		if(response.ok) return response.json();
+		else throw "Wrong username/password";
+	})
+	.then(myJson => window.sessionStorage.setItem("myJWT", myJson.JWT))
+	.catch(error => console.log(error));
+}
+
+document.querySelector("#login").addEventListener("click", login);
+</script>
+</body>
+</html>

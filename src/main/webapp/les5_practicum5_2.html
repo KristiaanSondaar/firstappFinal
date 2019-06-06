@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="mystyle.css">
+<meta charset="ISO-8859-1">
+<title>les5_practicum5_2</title>
+</head>
+<body>
+<h1>Mijn locatie</h1>
+<div id="frame">
+
+<div id="myLocation"></div>
+<form>
+Landcode: <label for="Landcode" id="Landcode">Loading: </label><br>
+Land: <label for="Land" id="Land">Loading: </label><br>
+Regio: <label for="Regio" id="Regio">Loading: </label><br>
+Stad: <label for="Stad" id="Stad">Loading: </label><br>
+Postcode: <label for="Postcode" id="Postcode">Loading: </label><br>
+Latitude: <label for="Latitude" id="Latitude">Loading: </label><br>
+Longitude: <label for="Longitude" id="longitude">Loading: </label><br>
+ip: <label for="IP" id="IP">Loading: </label>
+
+</form>
+<div id="weatherInfo"></div>
+<h2 id="h2">KAas</h2>
+<form>
+Temperatuur: <label for="Temperatuur" id="Temperatuur">Loading: </label><br>
+Luchtvochtigheid: <label for="Luchtvochtigheid" id="Luchtvochtigheid">Loading: </label><br>
+Windsnelheid: <label for="Windsnelheid" id="Windsnelheid">Loading: </label><br>
+Windrichting: <label for="Windrichting" id="Windrichting">Loading: </label><br>
+Zonsopgang: <label for="Zonsopgang" id="Zonsopgang">Loading: </label><br>
+Zonsondergang: <label for="Zonsondergang" id="Zonsondergang">Loading: </label><br>
+
+
+</form>
+<div id="countryList"></div>
+
+
+</div>
+
+<!-- Hier komen jouw script-tags -->
+<script>
+
+
+function initPage() {
+	fetch("https://ipapi.co/json/")
+	.then(response=> response.json())
+	.then(function(myJson){
+		document.getElementById("Landcode").innerHTML = myJson.country;
+		document.getElementById("Land").innerHTML = myJson.country_name;
+		document.getElementById("Regio").innerHTML = myJson.region;
+		document.getElementById("Stad").innerHTML = myJson.city;
+		document.getElementById("Postcode").innerHTML = myJson.postal;
+		document.getElementById("Latitude").innerHTML = myJson.latitude;
+		document.getElementById("longitude").innerHTML = myJson.longitude;
+		document.getElementById("IP").innerHTML = myJson.ip;
+		var lat = myJson.latitude;
+		var lon = myJson.longitude;
+		var city = myJson.city;
+		document.getElementById("h2").innerHTML = "Het weer in " + city;
+
+		
+		fetch("https://api.openweathermap.org/data/2.5/weather?lat=" +lat+ "&lon=" +lon+ "&APPID=26f40073bfb0928dcf725cf25a42f0ac&units=metric")
+		.then(response=> response.json())
+		.then(function(myJson){
+			var degree = degreeToText(myJson.wind.deg);
+
+			document.getElementById("Temperatuur").innerHTML = myJson.main.temp;
+			document.getElementById("Luchtvochtigheid").innerHTML = myJson.main.humidity;
+			document.getElementById("Windsnelheid").innerHTML = myJson.wind.speed;
+			document.getElementById("Windrichting").innerHTML = degree;
+
+
+			var sunrise = myJson.sys.sunrise;
+			var sunset = myJson.sys.sunset;
+			var datesunrise = new Date(sunrise*1000);
+			var datesunset = new Date(sunset*1000);
+			var risehours = "0"+datesunrise.getHours();
+			var riseminutes = datesunrise.getMinutes();
+			var riseseconds = datesunrise.getSeconds();
+			var risetime = risehours+ ":"+ riseminutes +":"+ riseseconds;
+			
+			var sethours = datesunset.getHours();
+			var setminutes = datesunset.getMinutes();
+			var setseconds = datesunset.getSeconds();
+			var settime = sethours+ ":"+ setminutes +":"+ setseconds;
+			document.getElementById("Zonsopgang").innerHTML = risetime;
+			document.getElementById("Zonsondergang").innerHTML = settime;
+
+		})
+
+	});
+	function  degreeToText(degree){
+	    if (degree>337.5) return 'Noord';
+	    if (degree>292.5) return 'Noord West';
+	    if(degree>247.5) return 'West';
+	    if(degree>202.5) return 'Zuid West';
+	    if(degree>157.5) return 'Zuid';
+	    if(degree>122.5) return 'Zuid Oost';
+	    if(degree>67.5) return 'Oost';
+	    if(degree>22.5){return 'Noord Oost';}
+	    return 'Noord';
+	}
+}
+
+initPage();
+</script>
+</body>
+</html>

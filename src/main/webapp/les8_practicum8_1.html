@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html>
+<head>
+<link rel="stylesheet" href="mystyle.css">
+<meta charset="ISO-8859-1">
+<meta name="viewport" content="width=400, initial-scale=1.0">
+<title>les6_practicum6_2</title>
+</head>
+<body>
+	<h2>Mijn locatie</h2>
+	<div id="frame" class="grid-container">
+
+		<div id="myLocation" class="one">
+			<form>
+				Landcode: <label for="Landcode" id="Landcode">Loading: </label><br>
+				Land: <label for="Land" id="Land">Loading: </label><br> Regio:
+				<label for="Regio" id="Regio">Loading: </label><br> Stad: <label
+					for="Stad" id="Stad">Loading: </label><br> Postcode: <label
+					for="Postcode" id="Postcode">Loading: </label><br> Latitude: <label
+					for="Latitude" id="Latitude">Loading: </label><br> Longitude:
+				<label for="Longitude" id="longitude">Loading: </label><br> ip:
+				<label for="IP" id="IP">Loading: </label>
+
+			</form>
+		</div>
+		<div id="weatherInfo" class="two">
+			<h2 id="h2"></h2>
+			<form>
+				Temperatuur: <label for="Temperatuur" id="Temperatuur">Loading:
+				</label><br> Luchtvochtigheid: <label for="Luchtvochtigheid"
+					id="Luchtvochtigheid">Loading: </label><br> Windsnelheid: <label
+					for="Windsnelheid" id="Windsnelheid">Loading: </label><br>
+				Windrichting: <label for="Windrichting" id="Windrichting">Loading:
+				</label><br> Zonsopgang: <label for="Zonsopgang" id="Zonsopgang">Loading:
+				</label><br> Zonsondergang: <label for="Zonsondergang"
+					id="Zonsondergang">Loading: </label><br>
+
+
+			</form>
+		</div>
+
+
+		<div id="countryList" class="three">
+			<h2>Beschikbare vakantie bestemmingen</h2>
+
+			<form id="POSTcountry">
+
+				<input type="text" name="code" placeholder="Code" /> <input
+					type="text" name="land" placeholder="Landnaam" /> <input
+					type="text" name="hoofdstad" placeholder="Hoofdstad" /> <input
+					type="text" name="regio" placeholder="Regio" /> <input type="text"
+					name="oppervlakte" placeholder="Oppervlakte" /> <input type="text"
+					name="inwoners" placeholder="Inwoners aantal" /> <input
+					type="button" id="post" value="Create!" />
+
+			</form>
+
+			<table id="table1" class="purpleHorizon">
+				<tr>
+					<td>Land</td>
+					<td>Hoofdstad</td>
+					<td>Regio</td>
+					<td>Oppervlakte</td>
+					<td>Inwoners</td>
+
+				</tr>
+			</table>
+		</div>
+
+	</div>
+
+	<script>
+
+document.querySelector("#post").addEventListener("click", function() {
+    var formData = new FormData(document.querySelector("#POSTcountry"));
+    var encData = new URLSearchParams(formData.entries());
+	
+	var fetchoptions = {
+			method: 'POST',
+			headers : {
+				'Authorization' : 'Bearer ' + window.sessionStorage.getItem("myJWT")
+			},
+		body: encData
+	}
+    
+    fetch("restservices/countries", fetchoptions)
+	.then(function(response) {
+	if (response.ok) {
+		loadCountries();
+		console.log("Country created!");
+	}
+	else console.log("Cannot create country!");
+})
+});
+
+function initPage() {
+	fetch("https://ipapi.co/json/")
+	.then(response=> response.json())
+	.then(function(myJson){
+		document.getElementById("Landcode").innerHTML = myJson.country;
+		document.getElementById("Land").innerHTML = myJson.country_name;
+		document.getElementById("Regio").innerHTML = myJson.region;
+		document.getElementById("Stad").innerHTML = myJson.city;
+		document.getElementById("Postcode").innerHTML = myJson.postal;
+		document.getElementById("Latitude").innerHTML = myJson.latitude;
+		document.getElementById("longitude").innerHTML = myJson.longitude;
+		document.getElementById("IP").innerHTML = myJson.ip;
+		var lat = myJson.latitude;
+		var lon = myJson.longitude;
+		var code = myJson.code;
+
+		showWeather(lat,lon,code);
+		loadCountries();
+		})
+
+	};
+	
+	function showWeather(lat,lon,code){
+		if(JSON.parse(window.localStorage.getItem(code)) != null){
+			var country = JSON.parse(window.localStorage.getItem(code));
+			if(minutes(new Date(country.tijd), new Date()) > 10) {
+				window.localStorage.removeItem(code);
+				showWeather(lat,lon,code);
+			}else{
+				var country = JSON.parse(window.localStorage.getItem(code));
+				document.getElementById('Temperatuur').innerHTML = country.Temperatuur;
+				document.getElementById('Luchtvochtigheid').innerHTML = country.Luchtvochtigheid;
+				document.getElementById('Windsnelheid').innerHTML = country.Windsnelheid;
+				document.getElementById('Windrichting').innerHTML = country.Windrichting;
+				document.getElementById('Zonsopgang').innerHTML = country.Zonsopgang;
+				document.getElementById('Zonsondergang').innerHTML = country.Zonsondergang;
+				console.log("Data uit localstorage");
+				console.log(country.Temperatuur);
+			}
+		} else {
+			
+		fetch("https://api.openweathermap.org/data/2.5/weather?lat=" +lat+ "&lon=" +lon+ "&APPID=26f40073bfb0928dcf725cf25a42f0ac&units=metric")
+		.then(response=> response.json())
+		.then(function(myJson){
+			
+			
+			var degree = degreeToText(myJson.wind.deg);
+			document.getElementById("Temperatuur").innerHTML = myJson.main.temp;
+			document.getElementById("Luchtvochtigheid").innerHTML = myJson.main.humidity;
+			document.getElementById("Windsnelheid").innerHTML = myJson.wind.speed;
+			document.getElementById("Windrichting").innerHTML = degree;
+			document.getElementById("h2").innerHTML = "Het weer in " + myJson.name;
+
+			var sunrise = myJson.sys.sunrise;
+			var sunset = myJson.sys.sunset;
+			var datesunrise = new Date(sunrise*1000);
+			var datesunset = new Date(sunset*1000);
+			var risehours = "0"+datesunrise.getHours();
+			var riseminutes = datesunrise.getMinutes();
+			var riseseconds = datesunrise.getSeconds();
+			var risetime = risehours+ ":"+ riseminutes +":"+ riseseconds;
+			
+			var sethours = datesunset.getHours();
+			var setminutes = datesunset.getMinutes();
+			var setseconds = datesunset.getSeconds();
+			var settime = sethours+ ":"+ setminutes +":"+ setseconds;
+			document.getElementById("Zonsopgang").innerHTML = risetime;
+			document.getElementById("Zonsondergang").innerHTML = settime;
+			
+			
+			var today = new Date();
+			var time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+			
+			var country = {"city" : myJson.name,"Temperatuur" : myJson.main.temp,"Luchtvochtigheid" : myJson.main.humidity,"Windsnelheid" : myJson.wind.speed,"Windrichting" : degree,"Zonsopgang" : risetime,"Zonsondergang" : settime,"Time" : time,"country" : myJson.sys.country}
+			window.localStorage.setItem(code,JSON.stringify(country));
+			var check = JSON.parse(window.localStorage.getItem(myJson.sys.country));
+			console.log("Nieuwe info!")
+
+			
+		});
+		}
+			
+	}
+	function minutes(dt2, dt1) {
+		  var diff =(dt2.getTime() - dt1.getTime()) / 1000;
+		  diff /= 60;
+		  return Math.abs(Math.round(diff));
+		 }
+	
+	function loadCountries(){
+
+		
+		fetch("/restservices/countries")
+		.then(response=> response.json())
+		.then(function(myJson){
+			for (const [i,name] of myJson.entries()){
+				var table = document.getElementById("table1");
+				const row = table.insertRow();
+				
+				var button = document.createElement("button");
+				button.innerHTML = name.name;
+				button.setAttribute("class",'myButton');
+
+				
+				
+				const land = row.insertCell(0);
+				const hoofdstad = row.insertCell(1);
+				const regio = row.insertCell(2);
+				const oppervlakte = row.insertCell(3);
+				const inwoners = row.insertCell(4);
+				const verwijderen = row.insertCell(5);
+				const updaten = row.insertCell(5);
+
+				land.appendChild(button);
+				hoofdstad.innerHTML = name.capital;
+				regio.innerHTML = name.region;
+				oppervlakte.innerHTML = name.surface;
+				inwoners.innerHTML = name.population;
+				
+				document.getElementById("table1").contentEditable = true;
+				const updatecode = name.code;
+				const updateLand = name.name;
+				const updateHoofdstad = name.capital;
+
+				
+				//update
+				
+				
+				var button2 = document.createElement("button");
+				var buttonUpdate = document.createElement("button");
+				
+				button2.innerHTML = "Verwijderen";
+				button2.setAttribute("class","myButton");
+				
+				buttonUpdate.innerHTML = "Updaten";
+				buttonUpdate.setAttribute("class","myButton");
+				
+
+				const lon = name.lng;
+				const lat = name.lat;
+				const code = name.code;
+				button.addEventListener("click", function(){
+					showWeather(lat,lon,code);
+				});
+				
+				//delete
+				var fetchoptions = {
+						method: 'DELETE',
+						headers : {
+							'Authorization' : 'Bearer ' + window.sessionStorage.getItem("myJWT")
+						}
+				}
+				button2.addEventListener("click", function(){
+					var id = code;
+					fetch("restservices/countries/" + id, fetchoptions)
+					.then(function(response) {
+					if (response.ok){
+						row.parentNode.removeChild(row);	
+						console.log("Country deleted!");
+					}
+					else if (response.status == 404)
+						console.log("Country not found!");
+					else console.log("Cannot delete country!");
+				})
+				});
+				
+				//update
+
+				
+				const rowIndex = i + 1;
+
+
+				buttonUpdate.addEventListener("click", function(){
+					var id = code;
+					var countryName = document.getElementById('table1').rows[rowIndex].cells[0].innerHTML.substring(25, document.getElementById('table1').rows[rowIndex].cells[0].innerHTML.length - 9);					var countryCapital = document.getElementById('table1').rows[rowIndex].cells[1].innerHTML;
+					var countryCapital = document.getElementById('table1').rows[rowIndex].cells[1].innerHTML;
+					var countryRegion = document.getElementById('table1').rows[rowIndex].cells[2].innerHTML;
+					var countrySurface = document.getElementById('table1').rows[rowIndex].cells[3].innerHTML;
+					var countryPopulation = document.getElementById('table1').rows[rowIndex].cells[4].innerHTML;
+					
+					var formData = new FormData();
+					formData.append("code", code);
+					formData.append("name", countryName);
+					formData.append("hoofdstad", countryCapital);
+					formData.append("regio", countryRegion);
+					formData.append("oppervlakte", countrySurface);
+					formData.append("inwoners", countryPopulation);
+					
+				    var encData = new URLSearchParams(formData.entries());
+					
+					var fetchoptionsPut = {
+							method: 'PUT',
+							headers : {
+								'Authorization' : 'Bearer ' + window.sessionStorage.getItem("myJWT")
+							},
+						body: encData
+					}
+					
+					fetch("restservices/countries/" + id, fetchoptionsPut)
+					.then(function(response) {
+					if (response.ok)
+						console.log("Country altered!");
+					else if (response.status == 404)
+						console.log("Country not found!");
+					else console.log("Cannot alter country!" + countryName);
+				})
+				});
+				
+				
+
+
+				
+
+				verwijderen.appendChild(button2);
+				updaten.appendChild(buttonUpdate);
+
+				
+  					
+			}
+		});
+	}
+	
+	function  degreeToText(degree){
+	    if (degree>337.5) return 'Noord';
+	    if (degree>292.5) return 'Noord West';
+	    if(degree>247.5) return 'West';
+	    if(degree>202.5) return 'Zuid West';
+	    if(degree>157.5) return 'Zuid';
+	    if(degree>122.5) return 'Zuid Oost';
+	    if(degree>67.5) return 'Oost';
+	    if(degree>22.5){return 'Noord Oost';}
+	    return 'Noord';
+	}
+
+
+initPage();
+</script>
+</body>
+</html>

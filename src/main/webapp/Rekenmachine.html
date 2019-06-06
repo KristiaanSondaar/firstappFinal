@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+
+<html>
+
+<title>Rekenmachine</title>
+
+<style>
+div#frame {
+	background-color: gray;
+	margin: 1em;
+	padding: 0.5em;
+	text-align: center;
+	width: 13.5em;
+}
+
+div#display {
+	background-color: white;
+	height: 1.5em;
+	margin: 0.5em;
+	padding-right: 0.3em;
+	text-align: right;
+}
+
+button {
+	height: 3.5em;
+	margin-bottom: 0.3em;
+	width: 3.5em;
+}
+</style>
+
+<body>
+
+	<div id="frame">
+		<div id="display" class="display">0</div>
+		<button class="nummer" waarde="7">7</button>
+		<button class="nummer" waarde="8">8</button>
+		<button class="nummer" waarde="9">9</button>
+		<button waarde-operator="gedeeld door" class="operator">/</button>
+		<button class="nummer" waarde="4">4</button>
+		<button class="nummer" waarde="5">5</button>
+		<button class="nummer" waarde="6">6</button>
+		<button waarde-operator="vermenigvuldigen" class="operator">*</button>
+		<button class="nummer" waarde="1">1</button>
+		<button class="nummer" waarde="2">2</button>
+		<button class="nummer" waarde="3">3</button>
+		<button waarde-operator="min" class="operator">-</button>
+		<button id="btn_clear" class="clear">C</button>
+		<button class="nummer" waarde="0">0</button>
+		<button id="btn_eq" class="equals" data-resultaat="">=</button>
+		<button waarde-operator="plus" class="operator">+</button>
+	</div>
+
+</body>
+<script type="text/javascript">
+	var scherm = function(element) {
+		if (element.charAt(0) === "#") {
+			return document.querySelector(element);
+		}
+
+		return document.querySelectorAll(element);
+	};
+
+	var display = scherm("#display"), gelijk = scherm("#btn_eq"), nummers = scherm(".nummer"), operator = scherm(".operator"), nieuwenummer = "", oudenummer = "", resultaatnummer
+
+	var setNum = function() {
+		if (resultaatnummer) {
+			nieuwenummer = this.getAttribute("waarde");
+			resultaatnummer = "";
+		} else {
+			nieuwenummer += this.getAttribute("waarde");
+		}
+
+		display.innerHTML = nieuwenummer;
+
+	};
+
+	var moveNum = function() {
+		oudenummer = nieuwenummer;
+		nieuwenummer = "";
+		operator = this.getAttribute("waarde-operator");
+
+		gelijk.setAttribute("data-resultaat", "");
+	};
+
+	var displayNum = function() {
+
+		oudenummer = parseFloat(oudenummer);
+		nieuwenummer = parseFloat(nieuwenummer);
+
+		switch (operator) {
+		case "plus":
+			resultaatnummer = oudenummer + nieuwenummer;
+			break;
+
+		case "min":
+			resultaatnummer = oudenummer - nieuwenummer;
+			break;
+
+		case "vermenigvuldigen":
+			resultaatnummer = oudenummer * nieuwenummer;
+			break;
+
+		case "gedeeld door":
+			resultaatnummer = oudenummer / nieuwenummer;
+			break;
+
+		default:
+			resultaatnummer = nieuwenummer;
+		}
+
+		if (!isFinite(resultaatnummer)) {
+			if (isNaN(resultaatnummer)) {
+				resultaatnummer = "Hij functioneert niet meer!";
+			} else {
+				resultaatnummer = "Delen door 0 kan niet!";
+			}
+		}
+
+		display.innerHTML = resultaatnummer;
+		gelijk.setAttribute("data-resultaat", resultaatnummer);
+
+		oudenummer = 0;
+		nieuwenummer = resultaatnummer;
+
+	};
+
+	var clearAll = function() {
+		oudenummer = "";
+		nieuwenummer = "";
+		display.innerHTML = "0";
+		gelijk.setAttribute("data-resultaat", resultaatnummer);
+	};
+
+	for (var i = 0, l = nummers.length; i < l; i++) {
+		nummers[i].onclick = setNum;
+	}
+
+	for (var i = 0, l = operator.length; i < l; i++) {
+		operator[i].onclick = moveNum;
+	}
+
+	gelijk.onclick = displayNum;
+
+	scherm("#btn_clear").onclick = clearAll;
+</script>
+
+</html>
